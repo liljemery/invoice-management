@@ -14,6 +14,8 @@ import Products from './pages/Products';
 import Customers from './pages/Customers';
 import Invoices from './pages/Invoices';
 import CreateInvoice from './pages/CreateInvoice';
+import Salespeople from './pages/Salespeople';
+import PaymentTerms from './pages/PaymentTerms';
 
 // Auth store
 import { useAuthStore } from './stores/authStore';
@@ -64,10 +66,8 @@ function App() {
             <Route path="/customers" element={<Customers />} />
             <Route path="/invoices" element={<Invoices />} />
             <Route path="/invoices/create" element={<CreateInvoice />} />
-            {/* Redirect /salespeople to dashboard since it's not implemented */}
-            <Route path="/salespeople" element={<Navigate to="/" replace />} />
-            {/* Explicitly handle /payment-terms route */}
-            <Route path="/payment-terms" element={<Navigate to="/" replace />} />
+            <Route path="/salespeople" element={<Salespeople />} />
+            <Route path="/payment-terms" element={<PaymentTerms />} />
             {/* Add other routes here */}
           </Route>
 
