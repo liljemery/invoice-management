@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/Table';
 import { BarChart, TrendingUp, Users, DollarSign, Clock, FileText } from 'lucide-react';
 import { formatCurrency, formatDate } from '../lib/utils';
-import ReportButton from '../components/ui/ReportButton';
+import PDFReportButton from '../components/ui/PDFReportButton';
 
 const Dashboard: React.FC = () => {
   const stats = [
@@ -57,9 +57,9 @@ const Dashboard: React.FC = () => {
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-md">
             <FileText size={14} className="mr-1" />
-            Exportar toda la data del sistema
+            Reporte completo del sistema
           </div>
-          <ReportButton variant="primary" />
+          <PDFReportButton variant="primary" />
         </div>
       </div>
 
