@@ -1,8 +1,9 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/Table';
-import { BarChart, TrendingUp, Users, DollarSign, Clock } from 'lucide-react';
+import { BarChart, TrendingUp, Users, DollarSign, Clock, FileText } from 'lucide-react';
 import { formatCurrency, formatDate } from '../lib/utils';
+import PDFReportButton from '../components/ui/PDFReportButton';
 
 const Dashboard: React.FC = () => {
   const stats = [
@@ -46,11 +47,20 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-sm text-gray-500">
-          Welcome back! Here's your business overview.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Welcome back! Here's your business overview.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-md">
+            <FileText size={14} className="mr-1" />
+            Reporte completo del sistema
+          </div>
+          <PDFReportButton variant="primary" />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
