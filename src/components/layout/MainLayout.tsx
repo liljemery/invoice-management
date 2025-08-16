@@ -147,7 +147,26 @@ const MainLayout: React.FC = () => {
       <div className="flex flex-1">
         {/* Sidebar Navigation */}
         <nav className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:pt-16 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
-          <div className="flex-1 flex flex-col min-h-0 pt-5 pb-4 overflow-y-auto">
+          {/* Company Branding */}
+          <div className="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-primary-600 dark:bg-primary-500 rounded-lg flex items-center justify-center">
+                  <FileText className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white truncate">
+                  InvoiceSystem
+                </h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  Business Management
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 flex flex-col min-h-0 pt-2 pb-4 overflow-y-auto">
             <div className="flex-1 flex flex-col">
               <ul className="flex-1 space-y-1 px-2">
                 {navItems.map((item) => (
@@ -172,6 +191,32 @@ const MainLayout: React.FC = () => {
                   </li>
                 ))}
               </ul>
+            </div>
+          </div>
+
+          {/* User Profile Section */}
+          <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                  {user?.name.charAt(0)}
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  {user?.name}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 truncate capitalize">
+                  {user?.role}
+                </p>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="flex-shrink-0 p-1 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title="Logout"
+              >
+                <LogOut size={16} />
+              </button>
             </div>
           </div>
         </nav>
