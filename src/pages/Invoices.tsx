@@ -82,7 +82,7 @@ const Invoices: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Invoices</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Invoices</h1>
         <Button 
           onClick={handleCreateInvoice} 
           leftIcon={<Plus size={16} />}
@@ -91,155 +91,180 @@ const Invoices: React.FC = () => {
         </Button>
       </div>
 
+      {/* Search Bar */}
       <Card>
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2">
-          <CardTitle className="text-lg font-medium">All Invoices</CardTitle>
-          <div className="flex items-center space-x-2 mt-2 sm:mt-0">
-            <Input
-              placeholder="Search invoices..."
-              value={searchTerm}
-              onChange={handleSearch}
-              leftIcon={<Search size={16} />}
-              className="max-w-xs"
-            />
-            <Button 
-              variant="outline" 
-              leftIcon={<Filter size={16} />}
-              className="hidden sm:flex"
-            >
-              Filter
-            </Button>
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <Input
+                placeholder="Search invoices..."
+                value={searchTerm}
+                onChange={handleSearch}
+                leftIcon={<Search size={16} />}
+              />
+            </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Invoices Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText size={20} className="text-primary-600 dark:text-primary-400" />
+            <span>Invoice List</span>
+            <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+              ({invoices.length} invoices)
+            </span>
+          </CardTitle>
         </CardHeader>
-        <CardContent className="px-0">
+        <CardContent>
           {isLoading ? (
-            <div className="flex justify-center items-center py-8">
+            <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
             </div>
           ) : (
-            <>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Invoice</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
-                      <TableHead className="w-[80px]"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {invoices.map((invoice, index) => (
-                      <TableRow 
-                        key={invoice.id}
-                        className="cursor-pointer hover:bg-gray-50 animate-fade-in"
-                        style={{ animationDelay: `${index * 0.05}s` }}
-                        onClick={() => handleViewInvoice(invoice.id)}
-                      >
-                        <TableCell className="font-medium">{invoice.number}</TableCell>
-                        <TableCell>{invoice.customerName}</TableCell>
-                        <TableCell>{formatDate(invoice.date)}</TableCell>
-                        <TableCell>
-                          <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${getStatusBadgeClass(invoice.status)}`}>
-                            {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-right">{formatCurrency(invoice.total)}</TableCell>
-                        <TableCell>
-                          <div className="relative">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleDropdown(invoice.id);
-                              }}
-                              className="p-1 rounded-md hover:bg-gray-100"
-                            >
-                              <MoreVertical size={16} />
-                            </button>
-                            {showDropdown === invoice.id && (
-                              <div className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                                <div className="py-1" role="none">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleViewInvoice(invoice.id);
-                                    }}
-                                    className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  >
-                                    <Eye size={16} className="mr-2" />
-                                    View Details
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleEditInvoice(invoice.id);
-                                    }}
-                                    className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  >
-                                    <Edit size={16} className="mr-2" />
-                                    Edit
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      // Handle download
-                                    }}
-                                    className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                                  >
-                                    <Download size={16} className="mr-2" />
-                                    Download PDF
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      // Handle delete
-                                    }}
-                                    className="flex w-full items-center px-4 py-2 text-sm text-error-600 hover:bg-gray-100"
-                                  >
-                                    <Trash size={16} className="mr-2" />
-                                    Delete
-                                  </button>
-                                </div>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Invoice #</TableHead>
+                    <TableHead>Customer</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {invoices.map((invoice) => (
+                    <TableRow key={invoice.id}>
+                      <TableCell className="font-medium text-gray-900 dark:text-white">
+                        {invoice.number}
+                      </TableCell>
+                      <TableCell className="text-gray-600 dark:text-gray-300">
+                        {invoice.customer}
+                      </TableCell>
+                      <TableCell className="text-gray-600 dark:text-gray-300">
+                        {formatDate(invoice.date)}
+                      </TableCell>
+                      <TableCell className="text-gray-600 dark:text-gray-300">
+                        {formatCurrency(invoice.total)}
+                      </TableCell>
+                      <TableCell>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          invoice.status === 'draft'
+                            ? 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+                            : invoice.status === 'issued'
+                            ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+                            : invoice.status === 'paid'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                        }`}>
+                          {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="relative">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleDropdown(invoice.id)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <MoreVertical size={16} />
+                          </Button>
+                          
+                          {showDropdown === invoice.id && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                              <div className="py-1">
+                                <button
+                                  onClick={() => {
+                                    handleViewInvoice(invoice.id);
+                                    setShowDropdown(null);
+                                  }}
+                                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                  <Eye size={16} className="mr-3" />
+                                  View
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    handleEditInvoice(invoice.id);
+                                    setShowDropdown(null);
+                                  }}
+                                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                  <Edit size={16} className="mr-3" />
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    // Handle download
+                                    setShowDropdown(null);
+                                  }}
+                                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                  <Download size={16} className="mr-3" />
+                                  Download
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    // Handle delete
+                                    setShowDropdown(null);
+                                  }}
+                                  className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                >
+                                  <Trash size={16} className="mr-3" />
+                                  Delete
+                                </button>
                               </div>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              
-              <div className="flex items-center justify-between px-4 py-4">
-                <div className="text-sm text-gray-700">
-                  Showing <span className="font-medium">{invoices.length}</span> of{' '}
-                  <span className="font-medium">{total}</span> invoices
-                </div>
-                <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page === 1}
-                    onClick={() => fetchInvoices(page - 1, limit)}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page === totalPages}
-                    onClick={() => fetchInvoices(page + 1, limit)}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
-            </>
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, total)} of {total} results
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {/* Handle previous page */}}
+                  disabled={page === 1}
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  Page {page} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {/* Handle next page */}}
+                  disabled={page === totalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

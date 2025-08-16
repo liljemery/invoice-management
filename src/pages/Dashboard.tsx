@@ -1,11 +1,38 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { 
+  DollarSign, 
+  Users, 
+  FileText, 
+  TrendingUp, 
+  Clock, 
+  Package, 
+  BarChart3, 
+  Zap 
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/Table';
-import { BarChart, TrendingUp, Users, DollarSign, Clock, FileText } from 'lucide-react';
-import { formatCurrency, formatDate } from '../lib/utils';
+import Button from '../components/ui/Button';
 import PDFReportButton from '../components/ui/PDFReportButton';
 
+// Mock data for dashboard
+const recentInvoices = [
+  { id: '1', customer: 'Acme Corp', date: '2024-01-15', amount: '2,500.00', status: 'Paid' },
+  { id: '2', customer: 'Globex Inc', date: '2024-01-14', amount: '1,800.00', status: 'Pending' },
+  { id: '3', customer: 'Stark Industries', date: '2024-01-13', amount: '3,200.00', status: 'Paid' },
+  { id: '4', customer: 'Wayne Enterprises', date: '2024-01-12', amount: '950.00', status: 'Overdue' },
+  { id: '5', customer: 'Umbrella Corp', date: '2024-01-11', amount: '4,100.00', status: 'Paid' },
+];
+
+const topCustomers = [
+  { id: '1', name: 'Acme Corp', total: 125000, invoices: 45, percentage: 28 },
+  { id: '2', name: 'Globex Inc', total: 98000, invoices: 32, percentage: 22 },
+  { id: '3', name: 'Stark Industries', total: 87500, invoices: 28, percentage: 19 },
+  { id: '4', name: 'Wayne Enterprises', total: 72000, invoices: 25, percentage: 16 },
+  { id: '5', name: 'Umbrella Corp', total: 68000, invoices: 22, percentage: 15 },
+];
+
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const stats = [
     {
       title: 'Total Sales',
@@ -37,122 +64,214 @@ const Dashboard: React.FC = () => {
     },
   ];
 
-  const recentInvoices = [
-    { id: 'INV-2023001', customer: 'Acme Corp', date: '2023-09-15', amount: 1250.00, status: 'paid' },
-    { id: 'INV-2023002', customer: 'Globex Inc', date: '2023-09-14', amount: 876.50, status: 'pending' },
-    { id: 'INV-2023003', customer: 'Stark Industries', date: '2023-09-12', amount: 3450.00, status: 'paid' },
-    { id: 'INV-2023004', customer: 'Wayne Enterprises', date: '2023-09-10', amount: 1100.00, status: 'pending' },
-    { id: 'INV-2023005', customer: 'Umbrella Corp', date: '2023-09-08', amount: 2780.00, status: 'paid' },
-  ];
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Welcome back! Here's your business overview.
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-md">
-            <FileText size={14} className="mr-1" />
-            Reporte completo del sistema
-          </div>
-          <PDFReportButton variant="primary" />
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+          Welcome back! Here's your business overview.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, i) => (
-          <Card key={i} className="animate-fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">{stat.title}</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</p>
-                </div>
-                <div className="rounded-full p-2 bg-gray-50">{stat.icon}</div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+                <DollarSign className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
-              <div className={`text-sm mt-2 ${stat.isPositive ? 'text-success-600' : 'text-error-600'}`}>
-                {stat.change} from last month
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Sales</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">$45,231</p>
+                <p className="text-xs text-green-600 dark:text-green-400">+20.1% from last month</p>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+                <Users className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">New Customers</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">+2,350</p>
+                <p className="text-xs text-green-600 dark:text-green-400">+180.1% from last month</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg">
+                <FileText className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pending Invoices</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">12</p>
+                <p className="text-xs text-yellow-600 dark:text-yellow-400">+2 from last month</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Revenue Growth</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">+12.5%</p>
+                <p className="text-xs text-green-600 dark:text-green-400">+2.1% from last month</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2 animate-fade-in">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-lg font-medium">Sales Overview</CardTitle>
-            <BarChart size={20} className="text-gray-400" />
+      {/* Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock size={20} className="text-primary-600 dark:text-primary-400" />
+              <span>Recent Invoices</span>
+            </CardTitle>
           </CardHeader>
-          <CardContent className="pl-2">
-            <div className="h-[240px] flex items-end justify-between">
-              {[40, 65, 45, 75, 55, 85, 70, 60, 80, 55, 75, 90].map((height, i) => (
-                <div key={i} className="relative flex-1 mx-1">
-                  <div 
-                    className="absolute bottom-0 left-0 right-0 bg-primary-200 rounded-t-sm animate-slide-up transition-all duration-500" 
-                    style={{ height: `${height}%`, animationDelay: `${i * 0.05}s` }}
-                  />
-                  <div 
-                    className="absolute bottom-0 left-0 right-0 bg-primary-500 rounded-t-sm animate-slide-up transition-all duration-500" 
-                    style={{ height: `${height * 0.7}%`, animationDelay: `${i * 0.05 + 0.1}s` }}
-                  />
+          <CardContent>
+            <div className="space-y-4">
+              {recentInvoices.map((invoice) => (
+                <div key={invoice.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+                      <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {invoice.customer}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {invoice.date}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      ${invoice.amount}
+                    </p>
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      invoice.status === 'Paid'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                        : invoice.status === 'Pending'
+                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                    }`}>
+                      {invoice.status}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
-            <div className="flex justify-between text-xs text-gray-500 mt-2">
-              <span>Jan</span>
-              <span>Feb</span>
-              <span>Mar</span>
-              <span>Apr</span>
-              <span>May</span>
-              <span>Jun</span>
-              <span>Jul</span>
-              <span>Aug</span>
-              <span>Sep</span>
-              <span>Oct</span>
-              <span>Nov</span>
-              <span>Dec</span>
-            </div>
           </CardContent>
         </Card>
 
-        <Card className="animate-fade-in">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-lg font-medium">Recent Invoices</CardTitle>
-            <span className="text-sm text-primary-600 hover:underline cursor-pointer">View all</span>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users size={20} className="text-primary-600 dark:text-primary-400" />
+              <span>Top Customers</span>
+            </CardTitle>
           </CardHeader>
-          <CardContent className="px-0">
-            <Table>
-              <TableBody>
-                {recentInvoices.map((invoice, i) => (
-                  <TableRow key={invoice.id} className="animate-slide-in" style={{ animationDelay: `${i * 0.05}s` }}>
-                    <TableCell className="py-2">
-                      <div className="font-medium">{invoice.id}</div>
-                      <div className="text-xs text-gray-500">{invoice.customer}</div>
-                    </TableCell>
-                    <TableCell className="text-right py-2">
-                      <div className="font-medium">{formatCurrency(invoice.amount)}</div>
-                      <div className="text-xs text-gray-500">{formatDate(invoice.date)}</div>
-                    </TableCell>
-                    <TableCell className="text-right py-2 w-24">
-                      <span className={`inline-flex rounded-full px-2 text-xs font-semibold ${
-                        invoice.status === 'paid' 
-                          ? 'bg-success-100 text-success-800' 
-                          : 'bg-warning-100 text-warning-800'
-                      }`}>
-                        {invoice.status === 'paid' ? 'Paid' : 'Pending'}
+          <CardContent>
+            <div className="space-y-4">
+              {topCustomers.map((customer, index) => (
+                <div key={customer.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center justify-center w-8 h-8 bg-primary-100 dark:bg-primary-900/20 rounded-full">
+                      <span className="text-sm font-medium text-primary-600 dark:text-primary-400">
+                        {index + 1}
                       </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {customer.name}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {customer.invoices} invoices
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      ${customer.total.toLocaleString()}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {customer.percentage}% of total
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap size={20} className="text-primary-600 dark:text-primary-400" />
+            <span>Quick Actions</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Button
+              variant="outline"
+              className="h-20 flex-col space-y-2"
+              onClick={() => navigate('/invoices/create')}
+            >
+              <FileText size={24} className="text-primary-600 dark:text-primary-400" />
+              <span>Create Invoice</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-20 flex-col space-y-2"
+              onClick={() => navigate('/customers')}
+            >
+              <Users size={24} className="text-primary-600 dark:text-primary-400" />
+              <span>Add Customer</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-20 flex-col space-y-2"
+              onClick={() => navigate('/products')}
+            >
+              <Package size={24} className="text-primary-600 dark:text-primary-400" />
+              <span>Add Product</span>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-20 flex-col space-y-2"
+              onClick={() => navigate('/invoices')}
+            >
+              <BarChart3 size={24} className="text-primary-600 dark:text-primary-400" />
+              <span>View Reports</span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* PDF Report Button */}
+      <div className="flex justify-center">
+        <PDFReportButton />
       </div>
     </div>
   );

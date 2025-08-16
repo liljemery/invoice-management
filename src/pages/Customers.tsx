@@ -14,6 +14,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/Table';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
+import Modal from '../components/ui/Modal';
+import CustomerForm from '../components/forms/CustomerForm';
 
 // Mock data for customers
 const mockCustomers = [
@@ -31,6 +33,9 @@ const Customers: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<boolean | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState<any>(null);
+  const [customers, setCustomers] = useState(mockCustomers);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -40,7 +45,43 @@ const Customers: React.FC = () => {
     setShowDropdown(showDropdown === id ? null : id);
   };
 
-  const filteredCustomers = mockCustomers.filter(customer => {
+  const handleAddCustomer = () => {
+    setEditingCustomer(null);
+    setShowModal(true);
+  };
+
+  const handleEditCustomer = (customer: any) => {
+    setEditingCustomer(customer);
+    setShowModal(true);
+  };
+
+  const handleDeleteCustomer = (customerId: string) => {
+    if (window.confirm('Are you sure you want to delete this customer?')) {
+      setCustomers(prev => prev.filter(c => c.id !== customerId));
+    }
+  };
+
+  const handleSubmitCustomer = (customerData: any) => {
+    if (editingCustomer) {
+      // Update existing customer
+      setCustomers(prev => prev.map(c => 
+        c.id === editingCustomer.id 
+          ? { ...c, ...customerData }
+          : c
+      ));
+    } else {
+      // Add new customer
+      const newCustomer = {
+        ...customerData,
+        id: `customer-${Date.now()}`
+      };
+      setCustomers(prev => [...prev, newCustomer]);
+    }
+    setShowModal(false);
+    setEditingCustomer(null);
+  };
+
+  const filteredCustomers = customers.filter(customer => {
     const matchesSearch = 
       customer.businessName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       customer.taxId.includes(searchTerm);
@@ -51,147 +92,134 @@ const Customers: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Customers</h1>
         <Button 
           leftIcon={<Plus size={16} />}
+          onClick={handleAddCustomer}
         >
           Add Customer
         </Button>
       </div>
 
+      {/* Search and Filter Bar */}
       <Card>
-        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-2">
-          <CardTitle className="text-lg font-medium">All Customers</CardTitle>
-          <div className="flex items-center space-x-2 mt-2 sm:mt-0">
-            <Input
-              placeholder="Search by name or tax ID..."
-              value={searchTerm}
-              onChange={handleSearch}
-              leftIcon={<Search size={16} />}
-              className="max-w-xs"
-            />
-            <div className="relative">
-              <Button 
-                variant="outline" 
+        <CardContent className="p-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <Input
+                placeholder="Search by name or tax ID..."
+                value={searchTerm}
+                onChange={handleSearch}
+                leftIcon={<Search size={16} />}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant={activeFilter === null ? 'primary' : 'outline'}
+                onClick={() => setActiveFilter(null)}
                 leftIcon={<Filter size={16} />}
-                onClick={() => setShowDropdown(showDropdown === 'filter' ? null : 'filter')}
               >
-                Filter
+                All
               </Button>
-              {showDropdown === 'filter' && (
-                <div className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                  <div className="py-1" role="none">
-                    <button
-                      onClick={() => {
-                        setActiveFilter(null);
-                        setShowDropdown(null);
-                      }}
-                      className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      All Customers
-                    </button>
-                    <button
-                      onClick={() => {
-                        setActiveFilter(true);
-                        setShowDropdown(null);
-                      }}
-                      className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      <CheckCircle size={16} className="mr-2 text-success-500" />
-                      Active Only
-                    </button>
-                    <button
-                      onClick={() => {
-                        setActiveFilter(false);
-                        setShowDropdown(null);
-                      }}
-                      className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      <XCircle size={16} className="mr-2 text-error-500" />
-                      Inactive Only
-                    </button>
-                  </div>
-                </div>
-              )}
+              <Button
+                variant={activeFilter === true ? 'primary' : 'outline'}
+                onClick={() => setActiveFilter(true)}
+                leftIcon={<CheckCircle size={16} />}
+              >
+                Active
+              </Button>
+              <Button
+                variant={activeFilter === false ? 'primary' : 'outline'}
+                onClick={() => setActiveFilter(false)}
+                leftIcon={<XCircle size={16} />}
+              >
+                Inactive
+              </Button>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Customers Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users size={20} className="text-primary-600 dark:text-primary-400" />
+            <span>Customer List</span>
+            <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+              ({filteredCustomers.length} customers)
+            </span>
+          </CardTitle>
         </CardHeader>
-        <CardContent className="px-0">
+        <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>ID</TableHead>
                   <TableHead>Business Name</TableHead>
                   <TableHead>Legal Name</TableHead>
                   <TableHead>Tax ID</TableHead>
-                  <TableHead>Account #</TableHead>
+                  <TableHead>Account Number</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="w-[80px]"></TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredCustomers.map((customer, index) => (
-                  <TableRow 
-                    key={customer.id}
-                    className="hover:bg-gray-50 animate-fade-in"
-                    style={{ animationDelay: `${index * 0.05}s` }}
-                  >
-                    <TableCell className="font-medium">{customer.id}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Users size={16} className="mr-2 text-gray-400" />
-                        {customer.businessName}
-                      </div>
+                {filteredCustomers.map((customer) => (
+                  <TableRow key={customer.id}>
+                    <TableCell className="font-medium text-gray-900 dark:text-white">
+                      {customer.businessName}
                     </TableCell>
-                    <TableCell>{customer.legalName}</TableCell>
-                    <TableCell>{customer.taxId}</TableCell>
-                    <TableCell>{customer.accountNumber}</TableCell>
+                    <TableCell className="text-gray-600 dark:text-gray-300">
+                      {customer.legalName}
+                    </TableCell>
+                    <TableCell className="text-gray-600 dark:text-gray-300">
+                      {customer.taxId}
+                    </TableCell>
+                    <TableCell className="text-gray-600 dark:text-gray-300">
+                      {customer.accountNumber}
+                    </TableCell>
                     <TableCell>
-                      <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
-                        customer.isActive 
-                          ? 'bg-success-100 text-success-800' 
-                          : 'bg-error-100 text-error-800'
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        customer.isActive
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                          : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
                       }`}>
                         {customer.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-right">
                       <div className="relative">
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => toggleDropdown(customer.id)}
-                          className="p-1 rounded-md hover:bg-gray-100"
+                          className="h-8 w-8 p-0"
                         >
                           <MoreVertical size={16} />
-                        </button>
+                        </Button>
+                        
                         {showDropdown === customer.id && (
-                          <div className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                            <div className="py-1" role="none">
+                          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                            <div className="py-1">
                               <button
-                                className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                onClick={() => {
+                                  handleEditCustomer(customer);
+                                  setShowDropdown(null);
+                                }}
+                                className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                               >
-                                <Edit size={16} className="mr-2" />
-                                Edit Customer
+                                <Edit size={16} className="mr-3" />
+                                Edit
                               </button>
                               <button
-                                className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                onClick={() => {
+                                  handleDeleteCustomer(customer.id);
+                                  setShowDropdown(null);
+                                }}
+                                className="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
                               >
-                                {customer.isActive ? (
-                                  <>
-                                    <XCircle size={16} className="mr-2" />
-                                    Deactivate
-                                  </>
-                                ) : (
-                                  <>
-                                    <CheckCircle size={16} className="mr-2" />
-                                    Activate
-                                  </>
-                                )}
-                              </button>
-                              <button
-                                className="flex w-full items-center px-4 py-2 text-sm text-error-600 hover:bg-gray-100"
-                              >
-                                <Trash size={16} className="mr-2" />
+                                <Trash size={16} className="mr-3" />
                                 Delete
                               </button>
                             </div>
@@ -206,6 +234,20 @@ const Customers: React.FC = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Add/Edit Customer Modal */}
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={editingCustomer ? 'Edit Customer' : 'Add Customer'}
+        size="lg"
+      >
+        <CustomerForm
+          customer={editingCustomer}
+          onSubmit={handleSubmitCustomer}
+          onCancel={() => setShowModal(false)}
+        />
+      </Modal>
     </div>
   );
 };

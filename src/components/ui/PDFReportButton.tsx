@@ -1,15 +1,8 @@
 import React from 'react';
-import { FileText, Download } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import Button from './Button';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-
-// Extend jsPDF type to include autoTable
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: any) => jsPDF;
-  }
-}
+import html2canvas from 'html2canvas';
 
 // Mock data - En una aplicación real, esto vendría de las stores o API
 const mockData = {
@@ -28,7 +21,7 @@ const mockData = {
     { id: '2', businessName: 'Globex Inc', legalName: 'Globex Incorporated', taxId: '98-7654321', accountNumber: '1002', isActive: true },
     { id: '3', businessName: 'Stark Industries', legalName: 'Stark Industries LLC', taxId: '45-6789123', accountNumber: '1003', isActive: true },
     { id: '4', businessName: 'Wayne Enterprises', legalName: 'Wayne Enterprises Inc', taxId: '78-9123456', accountNumber: '1004', isActive: true },
-    { id: '5', description: 'Umbrella Corp', legalName: 'Umbrella Corporation', taxId: '32-1654987', accountNumber: '1005', isActive: false },
+    { id: '5', businessName: 'Umbrella Corp', legalName: 'Umbrella Corporation', taxId: '32-1654987', accountNumber: '1005', isActive: false },
     { id: '6', businessName: 'Oscorp', legalName: 'Oscorp Industries', taxId: '65-4321987', accountNumber: '1006', isActive: true },
     { id: '7', businessName: 'LexCorp', legalName: 'LexCorp International', taxId: '89-7456321', accountNumber: '1007', isActive: true },
     { id: '8', businessName: 'Cyberdyne Systems', legalName: 'Cyberdyne Systems Corp', taxId: '23-7891456', accountNumber: '1008', isActive: false },
@@ -175,285 +168,158 @@ const PDFReportButton: React.FC<PDFReportButtonProps> = ({
     });
   };
 
-  const generatePDFReport = () => {
+  const generatePDFReport = async () => {
     try {
-      const doc = new jsPDF();
-      const pageWidth = doc.internal.pageSize.width;
-      const pageHeight = doc.internal.pageSize.height;
-      let yPosition = 20;
-
-      // Colors
-      const primaryColor = [59, 130, 246]; // Blue
-      const secondaryColor = [107, 114, 128]; // Gray
-      const accentColor = [16, 185, 129]; // Green
-
-      // Header
-      doc.setFillColor(...primaryColor);
-      doc.rect(0, 0, pageWidth, 40, 'F');
-      
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(24);
-      doc.setFont('helvetica', 'bold');
-      doc.text('INVOICE MANAGEMENT SYSTEM', pageWidth / 2, 20, { align: 'center' });
-      
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Complete Business Report', pageWidth / 2, 30, { align: 'center' });
-
-      yPosition = 50;
-
-      // Report Info
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(10);
-      doc.text(`Generated on: ${new Date().toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      })}`, 20, yPosition);
-      
-      yPosition += 20;
-
-      // Summary Statistics
-      doc.setFillColor(248, 250, 252);
-      doc.rect(15, yPosition - 5, pageWidth - 30, 25, 'F');
-      
-      doc.setTextColor(...primaryColor);
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('EXECUTIVE SUMMARY', 20, yPosition + 5);
-      
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
+      // Create a temporary HTML element for the report
+      const reportElement = document.createElement('div');
+      reportElement.style.position = 'absolute';
+      reportElement.style.left = '-9999px';
+      reportElement.style.top = '0';
+      reportElement.style.width = '800px';
+      reportElement.style.backgroundColor = 'white';
+      reportElement.style.padding = '40px';
+      reportElement.style.fontFamily = 'Arial, sans-serif';
+      reportElement.style.color = 'black';
       
       const totalRevenue = mockData.invoices.reduce((sum, inv) => sum + inv.total, 0);
       const activeProducts = mockData.products.filter(p => p.isActive).length;
       const activeCustomers = mockData.customers.filter(c => c.isActive).length;
       const activeSalespeople = mockData.salespeople.filter(s => s.isActive).length;
 
-      doc.text(`• Total Revenue: ${formatCurrency(totalRevenue)}`, 25, yPosition + 12);
-      doc.text(`• Active Products: ${activeProducts}`, 25, yPosition + 17);
-      doc.text(`• Active Customers: ${activeCustomers}`, 120, yPosition + 12);
-      doc.text(`• Active Salespeople: ${activeSalespeople}`, 120, yPosition + 17);
+      reportElement.innerHTML = `
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #3b82f6; margin: 0; font-size: 28px;">INVOICE MANAGEMENT SYSTEM</h1>
+          <p style="color: #6b7280; margin: 5px 0; font-size: 16px;">Complete Business Report</p>
+          <p style="color: #9ca3af; margin: 0; font-size: 12px;">Generated on: ${new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })}</p>
+        </div>
 
-      yPosition += 35;
+        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 30px;">
+          <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 18px;">EXECUTIVE SUMMARY</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+              <p style="margin: 5px 0;"><strong>Total Revenue:</strong> ${formatCurrency(totalRevenue)}</p>
+              <p style="margin: 5px 0;"><strong>Active Products:</strong> ${activeProducts}</p>
+            </div>
+            <div>
+              <p style="margin: 5px 0;"><strong>Active Customers:</strong> ${activeCustomers}</p>
+              <p style="margin: 5px 0;"><strong>Active Salespeople:</strong> ${activeSalespeople}</p>
+            </div>
+          </div>
+        </div>
 
-      // Products Section
-      doc.setTextColor(...primaryColor);
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text('PRODUCTS CATALOG', 20, yPosition);
-      yPosition += 10;
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 18px;">PRODUCTS CATALOG</h2>
+          <table style="width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb;">
+            <thead>
+              <tr style="background: #3b82f6; color: white;">
+                <th style="padding: 10px; text-align: left; border: 1px solid #e5e7eb;">ID</th>
+                <th style="padding: 10px; text-align: left; border: 1px solid #e5e7eb;">Description</th>
+                <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Cost</th>
+                <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Price</th>
+                <th style="padding: 10px; text-align: center; border: 1px solid #e5e7eb;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${mockData.products.map((product, index) => {
+                const margin = ((product.unitPrice - product.unitCost) / product.unitPrice * 100).toFixed(1);
+                return `
+                  <tr style="background: ${index % 2 === 0 ? '#f9fafb' : 'white'};">
+                    <td style="padding: 8px; border: 1px solid #e5e7eb;">${product.id}</td>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb;">${product.description}</td>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: right;">${formatCurrency(product.unitCost)}</td>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: right;">${formatCurrency(product.unitPrice)}</td>
+                    <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;">
+                      <span style="background: ${product.isActive ? '#10b981' : '#ef4444'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px;">
+                        ${product.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
 
-      const productHeaders = ['ID', 'Description', 'Cost', 'Price', 'Margin', 'Status'];
-      const productData = mockData.products.map(product => {
-        const margin = ((product.unitPrice - product.unitCost) / product.unitPrice * 100).toFixed(1);
-        return [
-          product.id,
-          product.description.length > 25 ? product.description.substring(0, 25) + '...' : product.description,
-          formatCurrency(product.unitCost),
-          formatCurrency(product.unitPrice),
-          `${margin}%`,
-          product.isActive ? 'Active' : 'Inactive'
-        ];
+        <div style="margin-bottom: 30px;">
+          <h2 style="color: #3b82f6; margin: 0 0 15px 0; font-size: 18px;">RECENT INVOICES</h2>
+          <table style="width: 100%; border-collapse: collapse; border: 1px solid #e5e7eb;">
+            <thead>
+              <tr style="background: #3b82f6; color: white;">
+                <th style="padding: 10px; text-align: left; border: 1px solid #e5e7eb;">Invoice #</th>
+                <th style="padding: 10px; text-align: left; border: 1px solid #e5e7eb;">Customer</th>
+                <th style="padding: 10px; text-align: left; border: 1px solid #e5e7eb;">Date</th>
+                <th style="padding: 10px; text-align: right; border: 1px solid #e5e7eb;">Total</th>
+                <th style="padding: 10px; text-align: center; border: 1px solid #e5e7eb;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${mockData.invoices.map((invoice, index) => `
+                <tr style="background: ${index % 2 === 0 ? '#f9fafb' : 'white'};">
+                  <td style="padding: 8px; border: 1px solid #e5e7eb;">${invoice.number}</td>
+                  <td style="padding: 8px; border: 1px solid #e5e7eb;">${invoice.customerName}</td>
+                  <td style="padding: 8px; border: 1px solid #e5e7eb;">${formatDate(invoice.date)}</td>
+                  <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: right;">${formatCurrency(invoice.total)}</td>
+                  <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center;">
+                    <span style="background: ${invoice.status === 'paid' ? '#10b981' : '#f59e0b'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px;">
+                      ${invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                    </span>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #3b82f6;">
+          <p style="color: #6b7280; margin: 0; font-size: 12px;">
+            Invoice Management System - Generated on ${new Date().toLocaleDateString()}
+          </p>
+        </div>
+      `;
+
+      // Add to DOM temporarily
+      document.body.appendChild(reportElement);
+
+      // Convert to canvas
+      const canvas = await html2canvas(reportElement, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
       });
 
-      doc.autoTable({
-        startY: yPosition,
-        head: [productHeaders],
-        body: productData,
-        theme: 'striped',
-        headStyles: { 
-          fillColor: primaryColor,
-          textColor: [255, 255, 255],
-          fontSize: 9,
-          fontStyle: 'bold'
-        },
-        bodyStyles: { fontSize: 8 },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
-        margin: { left: 20, right: 20 }
-      });
+      // Remove temporary element
+      document.body.removeChild(reportElement);
 
-      yPosition = (doc as any).lastAutoTable.finalY + 20;
+      // Create PDF
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
 
-      // Check if we need a new page
-      if (yPosition > pageHeight - 60) {
-        doc.addPage();
-        yPosition = 20;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
       }
 
-      // Customers Section
-      doc.setTextColor(...primaryColor);
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text('CUSTOMER DIRECTORY', 20, yPosition);
-      yPosition += 10;
-
-      const customerHeaders = ['ID', 'Business Name', 'Tax ID', 'Account #', 'Status'];
-      const customerData = mockData.customers.map(customer => [
-        customer.id,
-        customer.businessName?.length > 20 ? customer.businessName.substring(0, 20) + '...' : customer.businessName || 'N/A',
-        customer.taxId,
-        customer.accountNumber,
-        customer.isActive ? 'Active' : 'Inactive'
-      ]);
-
-      doc.autoTable({
-        startY: yPosition,
-        head: [customerHeaders],
-        body: customerData,
-        theme: 'striped',
-        headStyles: { 
-          fillColor: primaryColor,
-          textColor: [255, 255, 255],
-          fontSize: 9,
-          fontStyle: 'bold'
-        },
-        bodyStyles: { fontSize: 8 },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
-        margin: { left: 20, right: 20 }
-      });
-
-      yPosition = (doc as any).lastAutoTable.finalY + 20;
-
-      // Check if we need a new page
-      if (yPosition > pageHeight - 60) {
-        doc.addPage();
-        yPosition = 20;
-      }
-
-      // Salespeople Section
-      doc.setTextColor(...primaryColor);
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text('SALES TEAM PERFORMANCE', 20, yPosition);
-      yPosition += 10;
-
-      const salespeopleHeaders = ['ID', 'Name', 'Commission %', 'Total Sales', 'Invoices', 'Status'];
-      const salespeopleData = mockData.salespeople.map(person => [
-        person.id,
-        person.name,
-        `${person.commissionPercentage}%`,
-        formatCurrency(person.totalSales),
-        person.invoicesCount.toString(),
-        person.isActive ? 'Active' : 'Inactive'
-      ]);
-
-      doc.autoTable({
-        startY: yPosition,
-        head: [salespeopleHeaders],
-        body: salespeopleData,
-        theme: 'striped',
-        headStyles: { 
-          fillColor: primaryColor,
-          textColor: [255, 255, 255],
-          fontSize: 9,
-          fontStyle: 'bold'
-        },
-        bodyStyles: { fontSize: 8 },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
-        margin: { left: 20, right: 20 }
-      });
-
-      yPosition = (doc as any).lastAutoTable.finalY + 20;
-
-      // Check if we need a new page
-      if (yPosition > pageHeight - 60) {
-        doc.addPage();
-        yPosition = 20;
-      }
-
-      // Payment Terms Section
-      doc.setTextColor(...primaryColor);
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text('PAYMENT TERMS', 20, yPosition);
-      yPosition += 10;
-
-      const paymentTermsHeaders = ['ID', 'Description', 'Days', 'Usage', 'Status'];
-      const paymentTermsData = mockData.paymentTerms.map(term => [
-        term.id,
-        term.description,
-        term.days === 0 ? 'Immediate' : `${term.days} days`,
-        `${term.invoicesCount} invoices`,
-        term.isActive ? 'Active' : 'Inactive'
-      ]);
-
-      doc.autoTable({
-        startY: yPosition,
-        head: [paymentTermsHeaders],
-        body: paymentTermsData,
-        theme: 'striped',
-        headStyles: { 
-          fillColor: primaryColor,
-          textColor: [255, 255, 255],
-          fontSize: 9,
-          fontStyle: 'bold'
-        },
-        bodyStyles: { fontSize: 8 },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
-        margin: { left: 20, right: 20 }
-      });
-
-      yPosition = (doc as any).lastAutoTable.finalY + 20;
-
-      // Check if we need a new page
-      if (yPosition > pageHeight - 80) {
-        doc.addPage();
-        yPosition = 20;
-      }
-
-      // Invoices Section
-      doc.setTextColor(...primaryColor);
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'bold');
-      doc.text('RECENT INVOICES', 20, yPosition);
-      yPosition += 10;
-
-      const invoiceHeaders = ['Invoice #', 'Customer', 'Date', 'Salesperson', 'Total', 'Status'];
-      const invoiceData = mockData.invoices.map(invoice => [
-        invoice.number,
-        invoice.customerName.length > 15 ? invoice.customerName.substring(0, 15) + '...' : invoice.customerName,
-        formatDate(invoice.date),
-        invoice.salespersonName.length > 12 ? invoice.salespersonName.substring(0, 12) + '...' : invoice.salespersonName,
-        formatCurrency(invoice.total),
-        invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)
-      ]);
-
-      doc.autoTable({
-        startY: yPosition,
-        head: [invoiceHeaders],
-        body: invoiceData,
-        theme: 'striped',
-        headStyles: { 
-          fillColor: primaryColor,
-          textColor: [255, 255, 255],
-          fontSize: 9,
-          fontStyle: 'bold'
-        },
-        bodyStyles: { fontSize: 8 },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
-        margin: { left: 20, right: 20 }
-      });
-
-      // Footer
-      const totalPages = doc.getNumberOfPages();
-      for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        doc.setFillColor(...primaryColor);
-        doc.rect(0, pageHeight - 15, pageWidth, 15, 'F');
-        
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(8);
-        doc.text(`Invoice Management System - Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 7, { align: 'center' });
-        doc.text(`Generated: ${new Date().toLocaleDateString()}`, pageWidth - 20, pageHeight - 7, { align: 'right' });
-      }
-
-      // Save the PDF
+      // Save PDF
       const fileName = `invoice-system-report-${new Date().toISOString().split('T')[0]}.pdf`;
-      doc.save(fileName);
+      pdf.save(fileName);
       
       console.log('PDF report generated successfully');
     } catch (error) {

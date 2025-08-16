@@ -16,9 +16,13 @@ import Invoices from './pages/Invoices';
 import CreateInvoice from './pages/CreateInvoice';
 import Salespeople from './pages/Salespeople';
 import PaymentTerms from './pages/PaymentTerms';
+import Settings from './pages/Settings';
 
 // Auth store
 import { useAuthStore } from './stores/authStore';
+
+// Preferences manager
+import { preferencesManager } from './lib/preferences';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -44,6 +48,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 function App() {
+  useEffect(() => {
+    // Initialize preferences on app start
+    preferencesManager.applyPreferences();
+  }, []);
+
   return (
     <>
       <Router>
@@ -68,6 +77,7 @@ function App() {
             <Route path="/invoices/create" element={<CreateInvoice />} />
             <Route path="/salespeople" element={<Salespeople />} />
             <Route path="/payment-terms" element={<PaymentTerms />} />
+            <Route path="/settings" element={<Settings />} />
             {/* Add other routes here */}
           </Route>
 
